@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t player66/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run player66/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t player66/multi-client ./client
+  - docker build -t player66/multi-nginx ./nginx
+  - docker build -t player66/multi-server ./server
+  - docker build -t player66/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --passord-stdin
+  - docker push player66/multi-client
+  - docker push player66/multi-nginx
+  - docker push player66/multi-server
+  - docker push player66/multi-worker
